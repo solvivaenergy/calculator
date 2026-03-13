@@ -7,6 +7,9 @@ __pycache__/
 extract_*.py
 verify_*.py
 
+# Node
+node_modules/
+
 # OS
 .DS_Store
 Thumbs.db
