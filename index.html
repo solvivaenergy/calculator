@@ -8,35 +8,39 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --primary: #1e5326;
+            --primary: #1f522b;
             --primary-light: #2a7535;
-            --primary-dark: #143d1a;
+            --primary-dark: #163d1c;
             --accent: #d2ff1e;
-            --accent-dark: #1e5326;
-            --bg: #fffeff;
+            --accent-dark: #1f522b;
+            --blue: #006ac6;
+            --blue-light: #e8f2fc;
+            --bg: #f5f6f2;
             --card: #ffffff;
             --text: #212121;
             --text-muted: #616161;
             --border: #dde5dd;
-            --success: #1e5326;
+            --success: #1f522b;
             --warning: #f57c00;
             --error: #c62828;
-            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow: 0 2px 12px rgba(0,0,0,0.07);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-            background: #f4f5f0;
+            background: var(--bg);
             color: var(--text);
             line-height: 1.55;
             -webkit-font-smoothing: antialiased;
         }
         .header {
-            background: #d2ff1e;
-            padding: 0.85rem 2rem;
-            border-bottom: 3px solid #1e5326;
+            background: linear-gradient(135deg, #d2ff1e 0%, #c1f00a 100%);
+            padding: 1rem 2rem;
+            border-bottom: 3px solid var(--primary);
+            box-shadow: 0 2px 8px rgba(31,82,43,0.12);
         }
         .header-inner {
             max-width: 1400px;
@@ -51,17 +55,18 @@
             display: block;
         }
         .header-text h1 {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #1e5326;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
             letter-spacing: 0.02em;
         }
         .header-text p {
             font-size: 0.72rem;
             color: #3a6b40;
-            margin-top: 1px;
-            letter-spacing: 0.03em;
+            margin-top: 2px;
+            letter-spacing: 0.04em;
             text-transform: uppercase;
+            font-weight: 500;
         }
         .container {
             max-width: 1400px;
@@ -77,18 +82,22 @@
         .inputs-col, .results-col { display: flex; flex-direction: column; gap: 1rem; }
         .card {
             background: var(--card);
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 1.15rem 1.25rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            box-shadow: var(--shadow);
             border: 1px solid #e2e6e0;
+            transition: box-shadow 0.2s;
+        }
+        .card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.09);
         }
         .card-title {
             font-size: 0.82rem;
-            font-weight: 600;
-            color: #1e5326;
+            font-weight: 700;
+            color: var(--primary);
             margin-bottom: 0.7rem;
             padding-bottom: 0.45rem;
-            border-bottom: 1px solid #e2e6e0;
+            border-bottom: 2px solid var(--accent);
             text-transform: uppercase;
             letter-spacing: 0.06em;
         }
@@ -118,7 +127,14 @@
         .form-row select:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(30,83,38,0.15);
+            box-shadow: 0 0 0 3px rgba(31,82,43,0.15);
+        }
+        .form-row select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231f522b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            padding-right: 1.8rem;
         }
         .form-row input[type="number"] { width: 120px; }
         .form-row select { min-width: 140px; }
@@ -126,16 +142,17 @@
         /* Device table */
         .device-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         .device-table th {
-            background: #1e5326;
+            background: linear-gradient(180deg, #1f522b 0%, #163d1c 100%);
             color: white;
-            padding: 0.35rem 0.4rem;
+            padding: 0.4rem 0.45rem;
             text-align: center;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 0.72rem;
             text-transform: uppercase;
             letter-spacing: 0.04em;
         }
         .device-table td { padding: 0.3rem; border-bottom: 1px solid var(--border); }
+        .device-table tr:hover td { background: rgba(210,255,30,0.06); }
         .device-table select, .device-table input {
             width: 100%;
             padding: 0.25rem;
@@ -180,8 +197,10 @@
             border-radius: 50%;
             transition: 0.3s;
         }
-        .switch input:checked + .slider { background: #1e5326; }
+        .switch input:checked + .slider { background: var(--primary); }
         .switch input:checked + .slider:before { transform: translateX(20px); }
+        .switch input:disabled + .slider { background: #ccc; cursor: not-allowed; opacity: 0.5; }
+        .toggle-row.disabled > label:first-child { opacity: 0.5; }
         /* Results */
         .result-grid {
             display: grid;
@@ -203,14 +222,15 @@
         .result-value.highlight { color: var(--accent-dark); font-size: 1rem; }
         .big-result {
             text-align: center;
-            padding: 0.9rem 1rem;
-            background: #d2ff1e;
-            border-radius: 6px;
+            padding: 1rem 1.2rem;
+            background: linear-gradient(135deg, #d2ff1e 0%, #c5f20e 100%);
+            border-radius: 10px;
             margin-bottom: 0.6rem;
-            border-left: 4px solid #1e5326;
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 2px 8px rgba(210,255,30,0.25);
         }
-        .big-result .label { font-size: 0.78rem; color: #1e5326; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
-        .big-result .value { font-size: 1.6rem; font-weight: 700; color: #1e5326; margin-top: 2px; }
+        .big-result .label { font-size: 0.78rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+        .big-result .value { font-size: 1.7rem; font-weight: 800; color: var(--primary); margin-top: 2px; }
         .big-result .sub { font-size: 0.76rem; color: #3a6b40; margin-top: 0.2rem; }
         .pricing-breakdown { font-size: 0.85rem; }
         .pricing-row {
@@ -220,13 +240,16 @@
             border-bottom: 1px solid #f5f5f5;
         }
         .pricing-row.total {
-            border-top: 1px solid #1e5326;
+            border-top: 2px solid var(--primary);
             border-bottom: none;
             font-weight: 700;
-            color: #1e5326;
+            color: var(--primary);
             padding-top: 0.5rem;
             margin-top: 0.25rem;
             font-size: 0.9rem;
+            background: rgba(210,255,30,0.08);
+            padding: 0.5rem 0.3rem;
+            border-radius: 4px;
         }
         .pricing-row.discount { color: var(--success); }
         .hint {
@@ -245,6 +268,46 @@
             display: none;
         }
         .chart-container { position: relative; height: 280px; margin-top: 0.5rem; }
+        .savings-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin-top: 0.5rem; }
+        .savings-table th, .savings-table td { padding: 0.3rem 0.4rem; text-align: right; border: 1px solid #e0e0e0; }
+        .savings-table th { background: linear-gradient(180deg, #1f522b 0%, #163d1c 100%); color: #fff; font-weight: 600; }
+        .savings-table tbody tr:nth-child(even) td { background: #fafbf8; }
+        .savings-table tbody tr:hover td { background: rgba(210,255,30,0.08); }
+        .savings-table td:first-child { background: #f5f5f5; font-weight: 600; text-align: center; }
+        .savings-table td.positive { color: #1e5326; }
+        .savings-table td.negative { color: #c62828; }
+        .coverage-matrix { width: 100%; border-collapse: collapse; font-size: 0.72rem; margin-top: 0.5rem; }
+        .coverage-matrix th, .coverage-matrix td { padding: 0.25rem 0.35rem; text-align: center; border: 1px solid #e0e0e0; }
+        .coverage-matrix th { background: linear-gradient(180deg, #1f522b 0%, #163d1c 100%); color: #fff; font-weight: 600; font-size: 0.7rem; }
+        .coverage-matrix td:first-child { background: #f5f5f5; font-weight: 600; }
+        .coverage-matrix .highlight { background: rgba(210,255,30,0.25); font-weight: 700; }
+        .coverage-matrix .dim { color: #bbb; }
+        .amount-due-matrix { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+        .amount-due-matrix th, .amount-due-matrix td { padding: 0.25rem 0.35rem; text-align: center; border: 1px solid #e0e0e0; }
+        .amount-due-matrix th { background: linear-gradient(180deg, #1f522b 0%, #163d1c 100%); color: #fff; font-weight: 600; font-size: 0.7rem; }
+        .amount-due-matrix td:first-child { background: #f5f5f5; font-weight: 600; font-size: 0.7rem; }
+        .amount-due-matrix tr.row-active td { background: rgba(210,255,30,0.18); font-weight: 700; }
+        .amount-due-matrix tr.row-active td:first-child { background: var(--primary-dark); color: #fff; }
+        .amount-due-matrix .highlight { background: rgba(210,255,30,0.45); font-weight: 700; }
+        .payment-summary-row { display: flex; justify-content: space-between; padding: 0.35rem 0; font-size: 0.85rem; }
+        .payment-summary-row .ps-label { color: var(--text); }
+        .payment-summary-row .ps-value { font-weight: 700; color: var(--primary); }
+        .validity-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            font-size: 0.75rem;
+            color: #555;
+            padding: 0.6rem 1rem;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .validity-bar .status-valid { color: var(--primary); font-weight: 700; background: rgba(210,255,30,0.25); padding: 0.15rem 0.6rem; border-radius: 10px; }
+        .validity-bar .status-expired { color: var(--error); font-weight: 700; background: #ffebee; padding: 0.15rem 0.6rem; border-radius: 10px; }
         .disclaimer {
             font-size: 0.68rem;
             color: #888;
@@ -255,11 +318,21 @@
         }
         .footer {
             text-align: center;
-            padding: 1.25rem 1rem;
-            font-size: 0.7rem;
-            color: #999;
+            padding: 1.5rem 1.5rem 1rem;
+            font-size: 0.72rem;
+            color: #888;
             letter-spacing: 0.02em;
+            max-width: 1400px;
+            margin: 0 auto;
         }
+        /* Blue accent for financial/investment cards */
+        .card.card-blue { border-top: 3px solid var(--blue); }
+        .card.card-blue .card-title { color: var(--blue); border-bottom-color: var(--blue); }
+        /* Green accent for primary action card */
+        .card.card-green { border-top: 3px solid var(--primary); }
+        .card.card-green .card-title { color: var(--primary); }
+        /* Lime accent for highlight card */
+        .card.card-lime { border-top: 3px solid var(--accent); background: linear-gradient(180deg, #fefff8 0%, #fff 40%); }
         .consumption-bar {
             height: 16px;
             background: #e8e8e4;
@@ -291,6 +364,36 @@
         .bar-legend .day-legend::before { background: #a8cc00; }
         .bar-legend .night-legend::before { background: #1e5326; }
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        /* Value update animation */
+        .results-col .result-value,
+        .results-col .ps-value,
+        .results-col .big-result .value,
+        .results-col .big-result .sub,
+        .results-col .big-result .label,
+        .results-col .pricing-row > span:last-child,
+        .results-col #solarCoverage,
+        .results-col #paymentTermType,
+        .results-col #dpSummaryText,
+        .results-col #amountDue,
+        #estConsumption,
+        #paybackText {
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .updating .result-value,
+        .updating .ps-value,
+        .updating .big-result .value,
+        .updating .big-result .sub,
+        .updating .big-result .label,
+        .updating .pricing-row > span:last-child,
+        .updating #solarCoverage,
+        .updating #paymentTermType,
+        .updating #dpSummaryText,
+        .updating #amountDue,
+        #estConsumption.updating-val,
+        #paybackText.updating-val {
+            opacity: 0.3;
+            transform: scale(0.97);
+        }
         @media (max-width: 600px) {
             .two-col { grid-template-columns: 1fr; }
             .container { padding: 0.75rem; }
@@ -323,13 +426,13 @@
                 <input type="number" id="utilityRate" value="14.5" step="0.1" min="1" onchange="recalculate()">
             </div>
             <div class="form-row">
-                <label>Est. Monthly Electric Bill:</label>
+                <label>Estimated Avg Monthly ELECTRIC Bill:</label>
                 <span class="unit">₱</span>
-                <input type="number" id="monthlyBill" value="20000" step="500" min="1000" onchange="recalculate()">
+                <input type="number" id="monthlyBill" value="25000" step="500" min="1000" onchange="recalculate()">
             </div>
             <div class="form-row" style="margin-top: 0.25rem;">
                 <label>Est. Monthly Consumption:</label>
-                <span id="estConsumption" style="font-weight:600;">1,379 kWh</span>
+                <span id="estConsumption" style="font-weight:600;">1,724 kWh</span>
             </div>
         </div>
 
@@ -337,7 +440,7 @@
         <div class="card">
             <div class="card-title">Major Device Selector (up to 7)</div>
             <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.5rem;">
-                Select devices that affect your DAY vs. NIGHT usage distribution.
+                Select up to 7 Major Devices that may affect your DAY vs. NIGHT use distribution.
             </p>
             <div style="overflow-x:auto;">
             <table class="device-table">
@@ -366,27 +469,12 @@
                 <label>Solar Package (kWp):</label>
                 <select id="solarPackage" onchange="recalculate()">
                     <option value="0">None</option>
-                    <option value="5.16">5.16 kWp — ₱233,000</option>
-                    <option value="6.41">6.41 kWp — ₱289,000</option>
-                    <option value="8.39">8.39 kWp — ₱378,000</option>
-                    <option value="10.32">10.32 kWp — ₱418,000</option>
-                    <option value="12.26" selected>12.26 kWp — ₱497,000</option>
-                    <option value="15.48">15.48 kWp — ₱593,000</option>
-                    <option value="20">20 kWp — ₱765,000</option>
                 </select>
             </div>
             <div class="form-row">
                 <label>Battery (kWh):</label>
                 <select id="batteryKwh" onchange="recalculate()">
-                    <option value="0">None</option>
-                    <option value="5">5 kWh (1 battery) — ₱135,000</option>
-                    <option value="10" selected>10 kWh (2 batteries) — ₱224,000</option>
-                    <option value="15">15 kWh (3 batteries) — ₱313,000</option>
-                    <option value="20">20 kWh (4 batteries) — ₱412,000</option>
-                    <option value="25">25 kWh (5 batteries) — ₱501,000</option>
-                    <option value="30">30 kWh (6 batteries) — ₱590,000</option>
-                    <option value="35">35 kWh (7 batteries) — ₱689,000</option>
-                    <option value="40">40 kWh (8 batteries) — ₱778,000</option>
+                    <option value="0" selected>None</option>
                 </select>
             </div>
             <div id="batteryHint" class="hint"></div>
@@ -395,19 +483,20 @@
         <!-- Add-Ons -->
         <div class="card">
             <div class="card-title">Add-Ons & Location</div>
+            <div class="toggle-row disabled">
+                <label>Net Metering — <span id="netMeteringPriceLabel">₱37,427</span>:</label>
+                <label class="switch"><input type="checkbox" id="netMetering" disabled onchange="recalculate()"><span class="slider"></span></label>
+            </div>
+            <div id="netMeteringHint" class="hint">NET-METERING COMING SOON</div>
             <div class="toggle-row">
-                <label>Net Metering — ₱39,000:</label>
-                <label class="switch"><input type="checkbox" id="netMetering" checked onchange="recalculate()"><span class="slider"></span></label>
+                <label>CFEI & Permits — ₱37,333:</label>
+                <label class="switch"><input type="checkbox" id="cfeiPermits" onchange="recalculate()"><span class="slider"></span></label>
             </div>
             <div class="toggle-row">
-                <label>CFEI & Permits — ₱39,000:</label>
-                <label class="switch"><input type="checkbox" id="cfeiPermits" checked onchange="recalculate()"><span class="slider"></span></label>
+                <label>Rapid Shutdown Device (RSD) — <span id="rsdPriceLabel">₱63,311</span>:</label>
+                <label class="switch"><input type="checkbox" id="rsd" onchange="recalculate()"><span class="slider"></span></label>
             </div>
-            <div class="toggle-row">
-                <label>RSD — <span id="rsdPriceLabel">₱79,000</span>:</label>
-                <label class="switch"><input type="checkbox" id="rsd" checked onchange="recalculate()"><span class="slider"></span></label>
-            </div>
-            <div id="cfeiWarning" class="hint" style="display:none;">CFEI & RSD generally required with Net Metering.</div>
+            <div id="cfeiWarning" class="hint" style="display:none;">CFEI & RSD are recommended.</div>
             <hr style="margin: 0.5rem 0; border: none; border-top: 1px solid var(--border);">
             <div class="form-row">
                 <label>Roof Type:</label>
@@ -426,24 +515,24 @@
                 </select>
             </div>
             <div class="form-row">
-                <label>Add'l DC Cable (>30m):</label>
+                <label>Add'l. DC Cable in excess of 30m:</label>
                 <input type="number" id="addlDcCable" value="0" min="0" step="1" onchange="recalculate()">
                 <span class="unit">meters</span>
             </div>
             <div class="form-row">
-                <label>Add'l AC Cable (>10m):</label>
+                <label>Add'l. AC Cable in excess of 10m:</label>
                 <input type="number" id="addlAcCable" value="0" min="0" step="1" onchange="recalculate()">
                 <span class="unit">meters</span>
             </div>
             <div class="form-row" id="travelRow" style="display:none;">
-                <label>Travel >30km from Rizal Park:</label>
+                <label>Land Travel in excess of 30-km from Rizal Park:</label>
                 <input type="number" id="travelKm" value="0" min="0" step="1" onchange="recalculate()">
                 <span class="unit">km</span>
             </div>
         </div>
 
         <!-- Payment Terms -->
-        <div class="card">
+        <div class="card card-green">
             <div class="card-title">Payment Terms</div>
             <div class="form-row">
                 <label>Payment Term:</label>
@@ -451,14 +540,14 @@
                     <option value="1">Direct Purchase (1 month)</option>
                     <option value="6">6 Months</option>
                     <option value="12">12 Months</option>
-                    <option value="24" selected>24 Months</option>
+                    <option value="24">24 Months</option>
                     <option value="36">36 Months</option>
                     <option value="48">48 Months</option>
-                    <option value="60">60 Months (RTO)</option>
+                    <option value="60" selected>60 Months (RTO)</option>
                 </select>
             </div>
             <div class="form-row">
-                <label>Down Payment:</label>
+                <label>Pre-Installation Down Payment (DP):</label>
                 <select id="downPayment" onchange="recalculate()">
                     <option value="0" selected>0%</option>
                     <option value="0.05">5%</option>
@@ -474,15 +563,45 @@
                 </select>
             </div>
             <div class="toggle-row">
-                <label>Pay via Credit Card:</label>
-                <label class="switch"><input type="checkbox" id="creditCard" onchange="recalculate()"><span class="slider"></span></label>
-                <span class="unit">(+5% fee)</span>
+                <label>5% Fee on Credit Card Installment:</label>
+                <label class="switch"><input type="checkbox" id="creditCard" onchange="syncCcCheckbox('creditCard'); recalculate()"><span class="slider"></span></label>
             </div>
             <div id="ccWarning" class="hint" style="display:none;">MAX 36 months with Credit Card.</div>
             <div class="toggle-row" id="dpCcRow" style="display:none;">
-                <label>DP via Credit Card:</label>
+                <label>5% Credit Card Fee on Down Payment:</label>
                 <label class="switch"><input type="checkbox" id="dpCreditCard" onchange="recalculate()"><span class="slider"></span></label>
-                <span class="unit">(+5% fee on DP)</span>
+            </div>
+            <div class="toggle-row" id="ccInstallDpRow" style="display:none;">
+                <label>5% Fee on Credit Card Install Program w/ DP:</label>
+                <label class="switch"><input type="checkbox" id="ccInstallDP" onchange="syncCcCheckbox('ccInstallDP'); recalculate()"><span class="slider"></span></label>
+            </div>
+        </div>
+
+        <!-- ROI & Performance -->
+        <div class="card card-blue">
+            <div class="card-title">Investment Performance</div>
+            <div id="paybackText" style="font-size:1.1rem; font-weight:700; color:var(--blue); text-align:center; margin-bottom:0.5rem;">—</div>
+            <div style="margin:0.5rem 0; display:flex; align-items:center; gap:0.4rem; font-size:0.85rem;">
+                <label style="font-weight:500;">Analysis Period:</label>
+                <select id="analysisYears" onchange="recalculate()" style="padding:0.25rem 0.4rem; border:1px solid var(--border); border-radius:6px; font-size:0.85rem;">
+                    <option value="6">6</option>
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                    <option value="12">12</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                    <option value="25" selected>25</option>
+                    <option value="30">30</option>
+                </select>
+                <span>Years</span>
+            </div>
+            <div style="font-size:0.85rem; color:var(--text); line-height:1.6;">
+                <div id="irrLine">* Solar Investment IRR over <span id="irrYearsLabel">25</span>-Yrs.: <strong id="annualIrr">—</strong></div>
+                <div id="lcoeLine">* LCOE over <span id="lcoeYearsLabel">25</span>-Yrs.: <strong id="lcoe">—</strong></div>
+                <div id="savingsLine">* Savings over <span id="savingsYearsLabel">25</span>-Yrs.: <strong class="positive" id="totalSavings">—</strong></div>
+            </div>
+            <div class="disclaimer" style="margin-top:0.5rem;">
+                * Annual Internal Rate of Return (IRR). Assumes solar panel degradation of 0.5% and price inflation of 3% annually.
             </div>
         </div>
 
@@ -496,9 +615,11 @@
             <div class="big-result">
                 <div class="label" id="paymentLabel">Monthly RTO Payment for 24 Months (via PDCs):</div>
                 <div class="value" id="monthlyPayment">₱47,093</div>
-                <div class="sub" id="paymentSub">Expected Monthly Bill Reduction: ₱16,000</div>
+                <div class="sub" id="paymentSub">Expected* Monthly ELECTRIC Bill Reduction: ₱16,000</div>
+                <div class="sub" style="font-size:0.7rem; color:#666; margin-top:0.3rem;">* Not guaranteed, and based solely on the customer's inputs and generalized assumptions.</div>
             </div>
             <div id="dpSavingsMsg" style="font-size:0.82rem; color:var(--success); text-align:center; display:none;"></div>
+            <div id="dpEncourageMsg" style="font-size:0.82rem; color:var(--primary); text-align:center; margin-top:0.3rem; font-weight:500;">Add a Pre-Installation Down Payment for more DISCOUNTS!</div>
         </div>
 
         <!-- Consumption Summary -->
@@ -515,64 +636,68 @@
             <div class="result-grid" style="margin-top:0.5rem;">
                 <div class="result-item"><span class="result-label">Monthly Consumption</span><span class="result-value" id="totalConsumption">1,379 kWh</span></div>
                 <div class="result-item"><span class="result-label">Major Devices</span><span class="result-value" id="deviceConsumption">318 kWh</span></div>
-                <div class="result-item"><span class="result-label">Baseload</span><span class="result-value" id="baseloadConsumption">1,061 kWh</span></div>
-                <div class="result-item"><span class="result-label">Excess Solar/Day</span><span class="result-value" id="excessSolar">24 kWh</span></div>
+                <div class="result-item"><span class="result-label">Baseload w/out major devices</span><span class="result-value" id="baseloadConsumption">1,061 kWh</span></div>
+                <div class="result-item"><span class="result-label">Excess Solar</span><span class="result-value" id="excessSolar">24 kWh</span></div>
             </div>
             <div id="solarCoverage" style="font-size:0.82rem; color:var(--primary-dark); margin-top:0.5rem; font-weight:500;"></div>
+            <div class="disclaimer">
+                These figures are estimates generated from customer-provided inputs and standardized assumptions for solar production, system efficiency, and consumption patterns. Actual results may vary due to factors such as weather, shading, installation conditions, system performance, and changes in electricity usage. This table is for illustrative purposes only and does not constitute a performance guarantee.
+            </div>
         </div>
 
         <!-- Pricing Breakdown -->
-        <div class="card">
+        <div class="card card-green">
             <div class="card-title">Pricing Breakdown</div>
             <div class="pricing-breakdown">
-                <div class="pricing-row"><span>Solar Package (SpotCash)</span><span id="priceSolar">₱497,000</span></div>
+                <div class="pricing-row"><span id="solarPackageLabel">5.16 kWp Solar Package:</span><span id="priceSolar">₱497,000</span></div>
                 <div class="pricing-row"><span>Batteries</span><span id="priceBattery">₱224,000</span></div>
                 <div class="pricing-row"><span>Net Metering</span><span id="priceNetMetering">₱39,000</span></div>
                 <div class="pricing-row"><span>CFEI & Permits</span><span id="priceCfei">₱39,000</span></div>
                 <div class="pricing-row"><span>RSD</span><span id="priceRsd">₱79,000</span></div>
-                <div class="pricing-row" id="priceDcRow" style="display:none;"><span>Add'l DC Cable</span><span id="priceDcCable">₱0</span></div>
-                <div class="pricing-row" id="priceAcRow" style="display:none;"><span>Add'l AC Cable</span><span id="priceAcCable">₱0</span></div>
+                <div class="pricing-row" id="priceDcRow" style="display:none;"><span>Add'l. DC Cable</span><span id="priceDcCable">₱0</span></div>
+                <div class="pricing-row" id="priceAcRow" style="display:none;"><span>Add'l. AC Cable</span><span id="priceAcCable">₱0</span></div>
                 <div class="pricing-row" id="priceRoofRow" style="display:none;"><span>Roof Surcharge</span><span id="priceRoof">₱0</span></div>
                 <div class="pricing-row" id="priceLocRow" style="display:none;"><span>Location Surcharge</span><span id="priceLoc">₱0</span></div>
-                <div class="pricing-row" id="priceTravelRow" style="display:none;"><span>Delivery Surcharge</span><span id="priceTravel">₱0</span></div>
-                <div class="pricing-row total"><span>Total SpotCash Price</span><span id="totalSpotcash">₱878,000</span></div>
+                <div class="pricing-row" id="priceTravelRow" style="display:none;"><span>Land Travel</span><span id="priceTravel">₱0</span></div>
+                <div class="pricing-row total"><span>TOTAL SpotCash</span><span id="totalSpotcash">₱878,000</span></div>
             </div>
             <hr style="margin: 0.75rem 0; border:none; border-top:1px solid var(--border);">
             <div class="pricing-breakdown">
                 <div class="pricing-row"><span id="totalPriceLabel">Total Price (24 months)</span><span id="totalPrice">₱1,130,232</span></div>
-                <div class="pricing-row discount" id="discountRow"><span>Early Payment Discount</span><span id="earlyDiscount">-₱472,668</span></div>
-                <div class="pricing-row" id="dpRow" style="display:none;"><span>Down Payment</span><span id="dpAmount">₱0</span></div>
-                <div class="pricing-row" id="ccFeeRow" style="display:none;"><span>Credit Card Fee (5%)</span><span id="ccFee">₱0</span></div>
+                <div class="pricing-row discount" id="discountRow"><span>Less: Early Payment Discount</span><span id="earlyDiscount">-₱472,668</span></div>
+                <div class="pricing-row" id="dpRow" style="display:none;"><span>Pre-Installation Down Payment (DP)</span><span id="dpAmount">₱0</span></div>
+                <div class="pricing-row" id="ccFeeRow" style="display:none;"><span>5% Credit Card Fee</span><span id="ccFee">₱0</span></div>
             </div>
         </div>
 
-        <!-- ROI & Performance -->
+        <!-- Payment Summary -->
+        <div class="card card-lime">
+            <div class="card-title">Your Selected Payment Term</div>
+            <div id="paymentTermType" style="font-size:1rem; font-weight:700; color:var(--primary-dark); text-align:center; margin-bottom:0.4rem;">Rent-to-Own (RTO)</div>
+            <div id="dpSummaryText" style="font-size:0.82rem; color:var(--text); text-align:center; margin-bottom:0.5rem;">Zero Pre-Installation Downpayment</div>
+            <div class="payment-summary-row"><span class="ps-label" id="postInstLabel">Post-Installation Amount Due</span><span class="ps-value" id="postInstAmount">—</span></div>
+            <div class="payment-summary-row" style="font-size:0.75rem; color:#888; margin-top:-0.2rem;" id="postInstSub">via Monthly Post-Dated Check Payments</div>
+            <div class="payment-summary-row"><span class="ps-label">Number of Post-Installation Payments</span><span class="ps-value" id="postInstPayments">60</span></div>
+            <div class="payment-summary-row" style="font-size:0.75rem; color:#888; margin-top:-0.2rem;" id="postInstPaySub">via Post-Dated Checks (PDCs)</div>
+            <div class="payment-summary-row"><span class="ps-label" id="monthlyPmtLabel">Your Monthly PDC Amount</span><span class="ps-value" id="monthlyPmtAmount">—</span></div>
+            <hr style="margin: 0.5rem 0; border:none; border-top:2px solid var(--primary);">
+            <div class="payment-summary-row" style="font-size:1rem; background:rgba(210,255,30,0.12); padding:0.5rem 0.4rem; border-radius:6px; margin-top:0.3rem;"><span class="ps-label" style="font-weight:700;">Amount Due</span><span class="ps-value" style="font-size:1.15rem; color:var(--primary);" id="amountDue">—</span></div>
+        </div>
+
+        <!-- Amount Due Matrix -->
         <div class="card">
-            <div class="card-title">Investment Performance</div>
-            <div class="two-col">
-                <div class="big-result" style="padding:0.75rem;">
-                    <div class="label">Payback Period</div>
-                    <div class="value" id="paybackPeriod" style="font-size:1.4rem;">—</div>
-                </div>
-                <div class="big-result" style="padding:0.75rem;">
-                    <div class="label">Annual IRR</div>
-                    <div class="value" id="annualIrr" style="font-size:1.4rem;">—</div>
-                </div>
-            </div>
-            <div class="two-col" style="margin-top:0.5rem;">
-                <div class="result-item full"><span class="result-label">LCOE (over 25 years)</span><span class="result-value" id="lcoe">—</span></div>
-                <div class="result-item full"><span class="result-label">25-Year Savings (NPV)</span><span class="result-value positive" id="totalSavings">—</span></div>
+            <div class="card-title">What your Amount Due would be under our Most Popular Terms</div>
+            <div style="overflow-x:auto;">
+                <table class="amount-due-matrix" id="amountDueMatrix"></table>
             </div>
         </div>
 
-        <!-- Chart -->
-        <div class="card">
-            <div class="card-title">Savings vs. Monthly Payments (5 Years)</div>
-            <div class="chart-container">
-                <canvas id="savingsChart"></canvas>
-            </div>
+        <!-- Savings Table -->
+        <div class="card card-blue">
+            <div class="card-title">Savings minus Monthly RTO-Payments</div>
+            <div id="savingsTableContainer"></div>
             <div class="disclaimer">
-                DISCLAIMER: The chart above and estimated Internal Rate of Return (IRR) are based on projected
+                DISCLAIMER: The table above and estimated Internal Rate of Return (IRR) are based on projected
                 energy cost savings from the installation of a solar photovoltaic system under current electricity
                 tariffs, consumption patterns, and regulatory conditions in the Philippines. Actual results may vary
                 due to changes in electricity rates, system performance, weather conditions, maintenance costs,
@@ -581,37 +706,70 @@
             </div>
         </div>
 
+        <!-- Energy Use Coverage Bar Chart -->
+        <div class="card">
+            <div class="card-title">Energy Use Coverage</div>
+            <div class="chart-container" style="height:220px;">
+                <canvas id="coverageBarChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Energy Use Coverage Table -->
+        <div class="card">
+            <div class="card-title">Energy Use Coverage based on Solar & Battery Capacity</div>
+            <div id="coverageText" style="font-size:0.85rem; font-weight:500; color:var(--primary-dark); margin-bottom:0.4rem;"></div>
+            <div style="overflow-x:auto;">
+                <table class="coverage-matrix" id="coverageMatrix"></table>
+            </div>
+        </div>
+
     </div>
 </div>
 
 <div class="footer">
+    <div class="validity-bar">
+        <span>Calculator Valid Until: <strong id="validUntilDate">April 30, 2026</strong></span>
+        <span>Today's Date: <strong id="todayDate"></strong></span>
+        <span>Status: <strong id="validityStatus" class="status-valid">VALID</strong></span>
+    </div>
     © SOLVIVA Energy. All figures are estimates for illustrative purposes.
 </div>
 
 <script>
 // ============================================================
-// CONSTANTS & ASSUMPTIONS
+// SUPABASE CONFIGURATION
 // ============================================================
-const ASSUMPTIONS = {
+// TODO: Replace with your Supabase project URL and anon key
+const SUPABASE_URL = 'https://trpgecffkngyvejireyr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycGdlY2Zma25neXZlamlyZXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzOTgxODIsImV4cCI6MjA4ODk3NDE4Mn0.1_MII9B22ikb5HXBzMTq-0hQEC_6BnOHu2W_JZDHaTs';
+const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ============================================================
+// CONSTANTS & ASSUMPTIONS — loaded from Supabase (fallback defaults below)
+// ============================================================
+let ASSUMPTIONS = {
     acPeakUtilization: 0.5,
     inflationRate: 0.03,
     netMeteringEfficiency: 0.5,
+    netMeteringBuyback: 7.25,
     rtoInterestRate: 0.28,
+    partnerDiscount: 0.05,
     kwhPerKwpPerDay: 3.6,
     batteryEfficiency: 0.98,
     allowableDoD: 0.95,
     solarDegradation: 0.005,
     lcoeNpvRate: 0.06,
-    margin: 0.20,
     npvDiscountEarlyPay: 0.08,
-    batteryPriceRatio: 1.93,
-    rsdPriceRatio: 1.93,
-    netMeteringPriceRatio: 1.93,
-    cfeiPriceRatio: 1.93
+    batteryMargin: 0.28,
+    rsdMargin: 0.28,
+    netMeteringMargin: 0.40,
+    cfeiMargin: 0.40,
+    cablingMargin: 0.28,
+    travelMargin: 0.28,
+    roofLocationMargin: 0.20
 };
 
-// Device lookup table: name -> peak kW
-const DEVICES = {
+let DEVICES = {
     '': { kw: 0, isAC: false },
     '1.0hp AC': { kw: 1, isAC: true },
     '1.5hp AC': { kw: 1.3, isAC: true },
@@ -628,8 +786,7 @@ const DEVICES = {
     'Elec Clothes Dryer': { kw: 5, isAC: false }
 };
 
-// Solar radiance curve per hour (fraction of kWh/kWp/day)
-const RADIANCE_CURVE = [
+let RADIANCE_CURVE = [
     { hour: 6, factor: 0.017 },
     { hour: 7, factor: 0.049 },
     { hour: 8, factor: 0.078 },
@@ -644,8 +801,7 @@ const RADIANCE_CURVE = [
     { hour: 17, factor: 0.017 }
 ];
 
-// Solar pricing table: kWp -> { pricePerKwp, spotPrice, cost }
-const SOLAR_PRICES = [
+let SOLAR_PRICES = [
     { kwp: 5.16, pricePerKwp: 45000, cost: 165780, acquiCost: 15000 },
     { kwp: 6.41, pricePerKwp: 45000, cost: 186674, acquiCost: 15000 },
     { kwp: 8.39, pricePerKwp: 45000, cost: 268809, acquiCost: 15000 },
@@ -655,54 +811,156 @@ const SOLAR_PRICES = [
     { kwp: 20, pricePerKwp: 38250, cost: 560120, acquiCost: 15000 }
 ];
 
-// Roof type surcharge spotcash prices by kWp index
-const ROOF_PRICES = {
+let ROOF_PRICES = {
     asphalt: [46830, 58695, 76302.8, 93912, 111520.5, 140868, 181954.5],
     concrete: [86688, 108360, 140868, 173376, 205884, 260064, 335916]
 };
 
-// Location surcharge spotcash prices by kWp index
-const LOCATION_PRICES = {
+let LOCATION_PRICES = {
     cebu:    [102318.104, 113119.034, 129753.316, 150987.914, 167535.452, 194542.46, 237685.196],
     siargao: [566558.104, 577359.034, 593993.316, 650507.914, 667055.452, 694062.46, 772485.196]
 };
 
-// RSD prices by kWp
-const RSD_PRICES = {
-    5.16:  { cost: 20900, spot: 40000 },
-    6.41:  { cost: 24500, spot: 47000 },
-    8.39:  { cost: 29900, spot: 58000 },
-    10.32: { cost: 35300, spot: 68000 },
-    12.26: { cost: 40700, spot: 79000 },
-    15.48: { cost: 49700, spot: 96000 },
-    20:    { cost: 62300, spot: 120000 }
+let RSD_PRICES = {
+    5.16:  { cost: 20900, spot: 32511.11 },
+    6.41:  { cost: 24500, spot: 38111.11 },
+    8.39:  { cost: 29900, spot: 46511.11 },
+    10.32: { cost: 35300, spot: 54911.11 },
+    12.26: { cost: 40700, spot: 63311.11 },
+    15.48: { cost: 49700, spot: 77311.11 },
+    20:    { cost: 62300, spot: 96911.11 }
 };
 
-// Battery component pricing
-const BATTERY_PRICES = {
-    battery:     { cost: 46100, spot: 89000 },
-    rack:        { cost: 5000,  spot: 10000 },
-    ats:         { cost: 6000,  spot: 12000 },
-    materials:   { cost: 2200,  spot: 4000 },
-    installWith: { cost: 10500, spot: 20000 },
-    installAlone:{ cost: 26500, spot: 51000 }
+let BATTERY_PRICES = {
+    battery:     { cost: 46100, spot: 71711.11 },
+    rack:        { cost: 5000,  spot: 7777.78 },
+    ats:         { cost: 6000,  spot: 9333.33 },
+    materials:   { cost: 2200,  spot: 3422.22 },
+    installWith: { cost: 10500, spot: 16333.33 },
+    installAlone:{ cost: 26500, spot: 41222.22 }
 };
 
-// Other services
-const OTHER_PRICES = {
-    netMetering:  { cost: 20050, spot: 39000 },
-    cfeiPermits:  { cost: 20000, spot: 39000 },
-    dcCablePerM:  750,
-    acCablePerM:  1600,
-    deliveryFixed: 4000,
-    deliveryPerKm: 50
+let OTHER_PRICES = {
+    netMetering:   { cost: 20050, spot: 37426.67 },
+    cfeiPermits:   { cost: 20000, spot: 37333.33 },
+    dcCablePerM:   { cost: 750,   spot: 1166.67 },
+    acCablePerM:   { cost: 1600,  spot: 2488.89 },
+    deliveryFixed: { cost: 4000,  spot: 6222.22 },
+    deliveryPerKm: { cost: 50,    spot: 77.78 }
 };
 
-// Maintenance cost per visit by kWp
-const MAINTENANCE_PRICES = {
+let MAINTENANCE_PRICES = {
     5.16: 8930, 6.41: 8930, 8.39: 8930, 10.32: 8930,
     12.26: 9850, 15.48: 12460, 20: 16100
 };
+
+// ============================================================
+// SUPABASE DATA LOADER
+// ============================================================
+async function loadFromSupabase() {
+    try {
+        const [rAssumptions, rDevices, rRadiance, rSolar, rRoof, rLocation, rRsd, rBattery, rOther, rMaintenance] = await Promise.all([
+            _supabase.from('assumptions').select('*'),
+            _supabase.from('devices').select('*'),
+            _supabase.from('radiance_curve').select('*'),
+            _supabase.from('solar_prices').select('*'),
+            _supabase.from('roof_prices').select('*'),
+            _supabase.from('location_prices').select('*'),
+            _supabase.from('rsd_prices').select('*'),
+            _supabase.from('battery_prices').select('*'),
+            _supabase.from('other_prices').select('*'),
+            _supabase.from('maintenance_prices').select('*')
+        ]);
+
+        // Assumptions
+        if (rAssumptions.data && rAssumptions.data.length > 0) {
+            const obj = {};
+            rAssumptions.data.forEach(r => { obj[r.key] = Number(r.value); });
+            ASSUMPTIONS = obj;
+        }
+
+        // Devices
+        if (rDevices.data && rDevices.data.length > 0) {
+            const obj = {};
+            rDevices.data.forEach(r => { obj[r.name] = { kw: Number(r.kw), isAC: r.is_ac }; });
+            DEVICES = obj;
+        }
+
+        // Radiance curve
+        if (rRadiance.data && rRadiance.data.length > 0) {
+            RADIANCE_CURVE = rRadiance.data
+                .map(r => ({ hour: Number(r.hour), factor: Number(r.factor) }))
+                .sort((a, b) => a.hour - b.hour);
+        }
+
+        // Solar prices
+        if (rSolar.data && rSolar.data.length > 0) {
+            SOLAR_PRICES = rSolar.data
+                .map(r => ({ kwp: Number(r.kwp), pricePerKwp: Number(r.price_per_kwp), cost: Number(r.cost), acquiCost: Number(r.acqui_cost) }))
+                .sort((a, b) => a.kwp - b.kwp);
+        }
+
+        // Roof prices
+        if (rRoof.data && rRoof.data.length > 0) {
+            const obj = {};
+            rRoof.data.forEach(r => {
+                if (!obj[r.roof_type]) obj[r.roof_type] = [];
+                obj[r.roof_type][r.kwp_index] = Number(r.spot_price);
+            });
+            ROOF_PRICES = obj;
+        }
+
+        // Location prices
+        if (rLocation.data && rLocation.data.length > 0) {
+            const obj = {};
+            rLocation.data.forEach(r => {
+                if (!obj[r.location]) obj[r.location] = [];
+                obj[r.location][r.kwp_index] = Number(r.spot_price);
+            });
+            LOCATION_PRICES = obj;
+        }
+
+        // RSD prices
+        if (rRsd.data && rRsd.data.length > 0) {
+            const obj = {};
+            rRsd.data.forEach(r => { obj[Number(r.kwp)] = { cost: Number(r.cost), spot: Number(r.spot) }; });
+            RSD_PRICES = obj;
+        }
+
+        // Battery prices
+        if (rBattery.data && rBattery.data.length > 0) {
+            const obj = {};
+            rBattery.data.forEach(r => { obj[r.component] = { cost: Number(r.cost), spot: Number(r.spot) }; });
+            BATTERY_PRICES = obj;
+        }
+
+        // Other prices
+        if (rOther.data && rOther.data.length > 0) {
+            const obj = {};
+            rOther.data.forEach(r => {
+                if (r.spot !== null) {
+                    obj[r.key] = { cost: Number(r.cost), spot: Number(r.spot) };
+                } else {
+                    obj[r.key] = Number(r.cost);
+                }
+            });
+            OTHER_PRICES = obj;
+        }
+
+        // Maintenance prices
+        if (rMaintenance.data && rMaintenance.data.length > 0) {
+            const obj = {};
+            rMaintenance.data.forEach(r => { obj[Number(r.kwp)] = Number(r.cost_per_visit); });
+            MAINTENANCE_PRICES = obj;
+        }
+
+        console.log('Supabase: lookup data loaded successfully');
+        return true;
+    } catch (err) {
+        console.warn('Supabase: failed to load data, using hardcoded defaults', err);
+        return false;
+    }
+}
 
 // ============================================================
 // FINANCIAL FUNCTIONS
@@ -778,23 +1036,68 @@ function getSolarIndex(kwp) {
 }
 
 // ============================================================
+// SOLAR DROPDOWN INITIALIZATION
+// ============================================================
+function initSolarDropdown() {
+    const sel = document.getElementById('solarPackage');
+    const rate = ASSUMPTIONS.rtoInterestRate;
+    const mr = rate / 12;
+    SOLAR_PRICES.forEach(sp => {
+        const spot = roundUp(sp.pricePerKwp * sp.kwp, -3);
+        const total60 = Math.round(PMT(mr, 60, -spot, 0, 1) * 60);
+        const opt = document.createElement('option');
+        opt.value = sp.kwp;
+        opt.textContent = `${sp.kwp} kWp \u2014 ${formatCurrency(total60)}`;
+        if (sp.kwp === 5.16) opt.selected = true;
+        sel.appendChild(opt);
+    });
+}
+
+// ============================================================
+// BATTERY DROPDOWN INITIALIZATION
+// ============================================================
+function initBatteryDropdown() {
+    const sel = document.getElementById('batteryKwh');
+    for (let kwh = 5; kwh <= 40; kwh += 5) {
+        const numBatt = kwh / 5;
+        const numRacks = Math.ceil(numBatt / 3);
+        const hasAny = Math.min(1, numBatt);
+        const spot = numBatt * BATTERY_PRICES.battery.spot
+            + numRacks * BATTERY_PRICES.rack.spot
+            + hasAny * BATTERY_PRICES.ats.spot
+            + hasAny * BATTERY_PRICES.materials.spot
+            + hasAny * BATTERY_PRICES.installWith.spot;
+        const opt = document.createElement('option');
+        opt.value = kwh;
+        const mr = ASSUMPTIONS.rtoInterestRate / 12;
+        const total60 = Math.round(PMT(mr, 60, -spot, 0, 1) * 60);
+        const label = numBatt === 1 ? '1 battery' : `${numBatt} batteries`;
+        opt.textContent = `${kwh} kWh (${label}) \u2014 ${formatCurrency(total60)}`;
+        sel.appendChild(opt);
+    }
+}
+
+// ============================================================
 // DEVICE TABLE INITIALIZATION
 // ============================================================
 function initDeviceTable() {
     const tbody = document.getElementById('deviceTableBody');
     const defaultDevices = [
-        { device: '1.5hp AC', on: '21:00', off: '10:00', days: 7 },
-        { device: '3.0hp AC', on: '10:00', off: '12:00', days: 5 },
-        { device: '', on: '', off: '', days: 7 },
+        { device: '2.0hp AC', on: '21:00', off: '08:00', days: 7 },
+        { device: '6" Stove Burner', on: '10:00', off: '12:00', days: 3 },
+        { device: 'Level-1 EV Charger', on: '20:00', off: '06:00', days: 2 },
         { device: '', on: '', off: '', days: 7 },
         { device: '', on: '', off: '', days: 7 },
         { device: '', on: '', off: '', days: 7 },
         { device: '', on: '', off: '', days: 7 }
     ];
 
-    const deviceOptions = Object.keys(DEVICES).map(d =>
-        `<option value="${d}">${d || '(none)'}</option>`
-    ).join('');
+    const deviceOptions = Object.keys(DEVICES).map(d => {
+        const escaped = d.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const label = d || '(none)';
+        const escapedLabel = label.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return `<option value="${escaped}">${escapedLabel}</option>`;
+    }).join('');
 
     defaultDevices.forEach((d, i) => {
         const tr = document.createElement('tr');
@@ -854,9 +1157,41 @@ function calcDeviceHours(onTimeStr, offTimeStr, daysPerWeek) {
 // ============================================================
 // MAIN CALCULATION
 // ============================================================
-let savingsChart = null;
+let coverageBarChart = null;
+
+function syncCcCheckbox(source) {
+    const cc = document.getElementById('creditCard');
+    const ccDP = document.getElementById('ccInstallDP');
+    if (source === 'creditCard') {
+        ccDP.checked = cc.checked;
+    } else {
+        cc.checked = ccDP.checked;
+    }
+}
+
+let _recalcTimer = null;
 
 function recalculate() {
+    const resultsCol = document.querySelector('.results-col');
+    if (resultsCol) resultsCol.classList.add('updating');
+    // Left-panel dynamic values
+    const estEl = document.getElementById('estConsumption');
+    const paybackEl = document.getElementById('paybackText');
+    if (estEl) estEl.classList.add('updating-val');
+    if (paybackEl) paybackEl.classList.add('updating-val');
+
+    // Cancel any pending recalc so rapid changes don't stack
+    if (_recalcTimer) cancelAnimationFrame(_recalcTimer);
+
+    // Wait one frame for the fade-out to render, then compute and fade back in
+    _recalcTimer = requestAnimationFrame(() => { _recalcTimer = requestAnimationFrame(() => {
+    _doRecalculate(resultsCol);
+    if (estEl) estEl.classList.remove('updating-val');
+    if (paybackEl) paybackEl.classList.remove('updating-val');
+    }); });
+}
+
+function _doRecalculate(resultsCol) {
     // READ INPUTS
     const utilityRate = parseFloat(document.getElementById('utilityRate').value) || 14.5;
     const monthlyBill = parseFloat(document.getElementById('monthlyBill').value) || 20000;
@@ -874,13 +1209,15 @@ function recalculate() {
     const dpPct = parseFloat(document.getElementById('downPayment').value) || 0;
     const ccOn = document.getElementById('creditCard').checked;
     const dpCcOn = document.getElementById('dpCreditCard').checked;
+    const ccInstallDPOn = document.getElementById('ccInstallDP').checked;
     const rate = ASSUMPTIONS.rtoInterestRate;
 
     // Show/hide travel input
     document.getElementById('travelRow').style.display = (location === 2) ? '' : 'none';
 
-    // Show/hide DP CC option
+    // Show/hide DP CC options
     document.getElementById('dpCcRow').style.display = (dpPct > 0) ? '' : 'none';
+    document.getElementById('ccInstallDpRow').style.display = (dpPct > 0) ? '' : 'none';
 
     // CFEI warning
     const cfeiWarning = document.getElementById('cfeiWarning');
@@ -952,7 +1289,7 @@ function recalculate() {
             }
 
             // Weight by days per week
-            const avgHourlyKwh = isOn ? avgKw * 12 / 365 * days / 7 : 0;
+            const avgHourlyKwh = isOn ? avgKw * days / 7 : 0;
             load += avgHourlyKwh;
         }
         return load;
@@ -1070,8 +1407,8 @@ function recalculate() {
     }
 
     // Additional cables
-    const dcCableSpot = addlDc * OTHER_PRICES.dcCablePerM;
-    const acCableSpot = addlAc * OTHER_PRICES.acCablePerM;
+    const dcCableSpot = addlDc * OTHER_PRICES.dcCablePerM.spot;
+    const acCableSpot = addlAc * OTHER_PRICES.acCablePerM.spot;
 
     // Roof surcharge
     let roofSpot = 0;
@@ -1090,7 +1427,7 @@ function recalculate() {
     // Delivery surcharge (only for standard location)
     let travelSpot = 0;
     if (location === 2 && travelKm > 0) {
-        travelSpot = OTHER_PRICES.deliveryFixed + travelKm * OTHER_PRICES.deliveryPerKm;
+        travelSpot = OTHER_PRICES.deliveryFixed.spot + travelKm * OTHER_PRICES.deliveryPerKm.spot;
     }
 
     // Total SpotCash
@@ -1105,7 +1442,7 @@ function recalculate() {
     // Calculate 60-month totals for each component
     function get60moTotal(spot) {
         if (spot === 0) return 0;
-        return Math.round(PMT(monthlyRate, 60, -spot, 0, 1)) * 60;
+        return PMT(monthlyRate, 60, -spot, 0, 1) * 60;
     }
 
     const gross60mo = get60moTotal(solarSpot) + get60moTotal(batterySpot)
@@ -1120,7 +1457,7 @@ function recalculate() {
     } else if (paymentTerm === 1) {
         totalPriceNoCC = totalSpotCash;
     } else {
-        totalPriceNoCC = Math.round(PMT(monthlyRate, paymentTerm, -totalSpotCash, 0, 1)) * paymentTerm;
+        totalPriceNoCC = PMT(monthlyRate, paymentTerm, -totalSpotCash, 0, 1) * paymentTerm;
     }
 
     const earlyDiscount = totalPriceNoCC - gross60mo; // negative = savings
@@ -1135,7 +1472,7 @@ function recalculate() {
     } else if (paymentTerm === 1) {
         totalPriceWithCC = spotCashWithCC;
     } else {
-        totalPriceWithCC = Math.round(PMT(monthlyRate, paymentTerm, -spotCashWithCC, 0, 1)) * paymentTerm;
+        totalPriceWithCC = PMT(monthlyRate, paymentTerm, -spotCashWithCC, 0, 1) * paymentTerm;
     }
 
     // Pre-DP monthly payment
@@ -1153,7 +1490,8 @@ function recalculate() {
         monthlyRTO = totalSpotCash - dpAdjusted;
     } else {
         const pmt = Math.round(PMT(monthlyRate, paymentTerm, -(totalSpotCash - dpAdjusted), 0, 1));
-        monthlyRTO = Math.round(pmt * ccMultiplier);
+        const dpCcMultiplier = (dpPct > 0) ? (ccInstallDPOn ? 1.05 : 1) : ccMultiplier;
+        monthlyRTO = Math.round(pmt * dpCcMultiplier);
     }
 
     // Savings from DP
@@ -1187,9 +1525,9 @@ function recalculate() {
     const paybackMonths = paybackMonth ? paybackMonth % 12 : null;
 
     // ============================================================
-    // IRR CALCULATION (Annual, 25 years)
+    // IRR CALCULATION
     // ============================================================
-    const irrYears = 25;
+    const irrYears = parseInt(document.getElementById('analysisYears').value) || 25;
     const annualCashflows = [];
 
     for (let yr = 1; yr <= irrYears; yr++) {
@@ -1223,23 +1561,8 @@ function recalculate() {
         lcoe = totalEnergy !== 0 ? totalPvCost / totalEnergy : 0;
     }
 
-    // 25-year savings NPV
-    const npvSavings = PV(netRate * 12, irrYears * 12, -monthlyBillReduction, 0, 1);
-
-    // ============================================================
-    // CHART DATA (Monthly savings - payments, 5 years)
-    // ============================================================
-    const chartLabels = [];
-    const chartData = [];
-    const chartColors = [];
-    for (let m = 1; m <= 60; m++) {
-        chartLabels.push(`Mo ${m}`);
-        const adjSav = PV(netRate, m - 1, 0, -monthlyBillReduction);
-        const pmt = m <= paymentTerm ? monthlyRTO : 0;
-        const net = adjSav - pmt;
-        chartData.push(Math.round(net));
-        chartColors.push(net >= 0 ? 'rgba(30,83,38,0.75)' : 'rgba(198,40,40,0.6)');
-    }
+    // Savings NPV over selected years
+    const npvSavings = PV(netRate, irrYears * 12, -monthlyBillReduction, 0, 1);
 
     // ============================================================
     // UPDATE UI
@@ -1262,17 +1585,20 @@ function recalculate() {
 
     // Solar coverage
     const coverageText = solarKwp > 0
-        ? `${formatNumber(solarKwp, 2)}-kWp Solar${batteryKwhTotal > 0 ? ` with ${batteryKwhTotal}-kWh Battery` : ''}${netMeteringOn ? ' & Net Metering' : ''} covers ${Math.round(solarCoveragePct * 100)}% of energy consumption.`
+        ? `${formatNumber(solarKwp, 2)}-kWp Solar${batteryKwhTotal > 0 ? ` with ${batteryKwhTotal}-kWh Battery` : ''}${netMeteringOn ? ' & Net Metering' : ''} covers ${Math.round(solarCoveragePct * 100)}% of your energy consumption.`
         : '';
     document.getElementById('solarCoverage').textContent = coverageText;
 
     // Battery hint
     const recommendedBattery = Math.ceil(totalExcessSolar / 5) * 5;
     document.getElementById('batteryHint').textContent = solarKwp > 0
-        ? `${recommendedBattery} kWh battery recommended based on ${Math.floor(totalExcessSolar)} kWh excess solar.`
+        ? `${recommendedBattery}-kWh BATTERY recommended based on calculated excess solar.`
         : '';
 
     // Pricing breakdown
+    document.getElementById('solarPackageLabel').textContent = solarKwp > 0
+        ? `${formatNumber(solarKwp, 2)} kWp Solar Package:`
+        : 'Solar Package:';
     document.getElementById('priceSolar').textContent = formatCurrency(solarSpot);
     document.getElementById('priceBattery').textContent = formatCurrency(batterySpot);
     document.getElementById('priceNetMetering').textContent = formatCurrency(netMeterSpot);
@@ -1312,16 +1638,21 @@ function recalculate() {
     document.getElementById('earlyDiscount').textContent = formatCurrency(earlyDiscount);
 
     document.getElementById('dpRow').style.display = dpPct > 0 ? '' : 'none';
-    document.getElementById('dpAmount').textContent = formatCurrency(dpChargedToCC);
+    document.getElementById('dpAmount').textContent = formatCurrency(dpAmount);
 
-    document.getElementById('ccFeeRow').style.display = ccOn ? '' : 'none';
-    document.getElementById('ccFee').textContent = formatCurrency(totalPriceWithCC - totalPriceNoCC);
+    document.getElementById('ccFeeRow').style.display = (ccOn || ccInstallDPOn) ? '' : 'none';
+    document.getElementById('ccFee').textContent = formatCurrency(
+        dpPct > 0
+            ? (ccInstallDPOn ? monthlyRTO * paymentTerm - Math.round(PMT(monthlyRate, paymentTerm, -(totalSpotCash - dpAdjusted), 0, 1)) * paymentTerm : 0) + dpCcFee
+            : totalPriceWithCC - totalPriceNoCC
+    );
 
     // Main payment display
     let payLabel;
+    const isCC = dpPct > 0 ? ccInstallDPOn : ccOn;
     if (paymentTerm === 1) {
         payLabel = 'Direct Purchase Price:';
-    } else if (ccOn) {
+    } else if (isCC) {
         payLabel = `Credit Card Monthly Install Pmt for ${paymentTerm} Months:`;
     } else {
         payLabel = `Monthly RTO Payment for ${paymentTerm} Months (via PDCs):`;
@@ -1329,91 +1660,304 @@ function recalculate() {
     document.getElementById('paymentLabel').textContent = payLabel;
     document.getElementById('monthlyPayment').textContent = formatCurrency(monthlyRTO);
     document.getElementById('paymentSub').textContent =
-        `Expected* Monthly Bill Reduction: ${formatCurrency(monthlyBillReduction)}`;
+        `Expected* Monthly ELECTRIC Bill Reduction: ${formatCurrency(monthlyBillReduction)}`;
 
     // DP savings msg
     const dpMsg = document.getElementById('dpSavingsMsg');
     if (dpPct > 0 && dpSavings > 0) {
         dpMsg.style.display = '';
-        dpMsg.textContent = `Your ${Math.round(dpPct * 100)}% Down Payment saves you ${formatCurrency(dpSavings)}.`;
+        dpMsg.textContent = `Your ${Math.round(dpPct * 100)}% Pre-Installation Down Payment saves you ${formatCurrency(dpSavings)}.`;
     } else {
         dpMsg.style.display = 'none';
     }
 
+    // DP encouragement msg (hide when DP is already selected)
+    const dpEncourageMsg = document.getElementById('dpEncourageMsg');
+    if (dpEncourageMsg) dpEncourageMsg.style.display = dpPct > 0 ? 'none' : '';
+
     // Payback
     if (paybackMonth !== null) {
-        let pbText = paybackYears + ' Years';
-        if (paybackMonths > 0) pbText += ` ${paybackMonths} Mo`;
-        document.getElementById('paybackPeriod').textContent = pbText;
+        let pbText = paybackYears + '-Years';
+        if (paybackMonths > 0) pbText += ` & ${paybackMonths}-Months`;
+        document.getElementById('paybackText').textContent = `Your Payback Period: ${pbText}`;
     } else {
-        document.getElementById('paybackPeriod').textContent = '—';
+        document.getElementById('paybackText').textContent = '—';
     }
 
     // IRR
-    document.getElementById('annualIrr').textContent =
-        irr !== null ? (irr * 100).toFixed(1) + '%' :
+    const irrText = irr !== null ? (irr * 100).toFixed(1) + '%' :
         (annualCashflows[0] >= 0 ? 'Net+ from Mo-1' : '—');
+    document.getElementById('annualIrr').textContent = irrText;
+
+    // Update year labels
+    document.getElementById('irrYearsLabel').textContent = irrYears;
+    document.getElementById('lcoeYearsLabel').textContent = irrYears;
+    document.getElementById('savingsYearsLabel').textContent = irrYears;
 
     // LCOE
     document.getElementById('lcoe').textContent = lcoe > 0 ? `₱${lcoe.toFixed(2)}/kWh` : '—';
 
-    // 25-year savings
+    // Savings over selected years
     document.getElementById('totalSavings').textContent = formatCurrency(npvSavings);
 
     // ============================================================
-    // CHART
+    // SAVINGS TABLE (12 months × 5 years)
     // ============================================================
-    if (savingsChart) savingsChart.destroy();
-    const ctx = document.getElementById('savingsChart').getContext('2d');
-    savingsChart = new Chart(ctx, {
+    let tableHtml = '<table class="savings-table"><thead><tr><th>Mo.</th>';
+    for (let yr = 1; yr <= 5; yr++) tableHtml += `<th>Year ${yr}</th>`;
+    tableHtml += '</tr></thead><tbody>';
+    for (let mo = 1; mo <= 12; mo++) {
+        tableHtml += `<tr><td>${mo}</td>`;
+        for (let yr = 1; yr <= 5; yr++) {
+            const globalMonth = (yr - 1) * 12 + mo;
+            const adjSav = PV(netRate, globalMonth - 1, 0, -monthlyBillReduction);
+            const pmt = globalMonth <= paymentTerm ? monthlyRTO : 0;
+            const net = Math.round(adjSav - pmt);
+            const cls = net >= 0 ? 'positive' : 'negative';
+            tableHtml += `<td class="${cls}">${formatCurrency(net)}</td>`;
+        }
+        tableHtml += '</tr>';
+    }
+    tableHtml += '</tbody></table>';
+    document.getElementById('savingsTableContainer').innerHTML = tableHtml;
+
+    // ============================================================
+    // ENERGY USE COVERAGE BAR CHART
+    // ============================================================
+    // Calculate coverage fractions for 4 scenarios
+    const solarOnlyCovPct = totalConsumptionPerDay > 0 ? totalSolarCoverage / totalConsumptionPerDay : 0;
+
+    // Battery coverage (solar + battery)
+    const solarBattCovPct = totalConsumptionPerDay > 0
+        ? (totalSolarCoverage + totalBatteryUse) / totalConsumptionPerDay : 0;
+    const battOnlyPct = solarBattCovPct - solarOnlyCovPct;
+
+    // Full coverage (solar + battery + net metering)
+    const fullCovPct = solarCoveragePct;
+    const nmOnlyPct = fullCovPct - solarBattCovPct;
+
+    if (coverageBarChart) coverageBarChart.destroy();
+    const cbCtx = document.getElementById('coverageBarChart').getContext('2d');
+    const scenarios = solarKwp > 0
+        ? (netMeteringOn
+            ? ['No Solar', 'Solar Only', 'Solar w/\nBatteries', 'Solar w/ Batteries\n& Net-Metering']
+            : (batteryKwhTotal > 0
+                ? ['No Solar', 'Solar Only', 'Solar w/\nBatteries']
+                : ['No Solar', 'Solar Only']))
+        : ['No Solar'];
+
+    const uncoveredData = [], solarData = [], battData = [], nmData = [];
+    for (let i = 0; i < scenarios.length; i++) {
+        if (i === 0) { uncoveredData.push(1); solarData.push(0); battData.push(0); nmData.push(0); }
+        else if (i === 1) { solarData.push(solarOnlyCovPct); battData.push(0); nmData.push(0); uncoveredData.push(1 - solarOnlyCovPct); }
+        else if (i === 2) { solarData.push(solarOnlyCovPct); battData.push(battOnlyPct); nmData.push(0); uncoveredData.push(1 - solarBattCovPct); }
+        else { solarData.push(solarOnlyCovPct); battData.push(battOnlyPct); nmData.push(nmOnlyPct); uncoveredData.push(1 - fullCovPct); }
+    }
+
+    coverageBarChart = new Chart(cbCtx, {
         type: 'bar',
         data: {
-            labels: chartLabels,
-            datasets: [{
-                label: 'Savings minus Payments (₱)',
-                data: chartData,
-                backgroundColor: chartColors,
-                borderWidth: 0,
-                borderRadius: 2
-            }]
+            labels: scenarios,
+            datasets: [
+                { label: 'Solar', data: solarData, backgroundColor: '#d2ff1e' },
+                { label: 'Battery', data: battData, backgroundColor: '#006ac6' },
+                { label: 'Net Metering', data: nmData, backgroundColor: '#1f522b' },
+                { label: 'Uncovered', data: uncoveredData, backgroundColor: '#e0e0e0' }
+            ]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
+            responsive: true, maintainAspectRatio: false,
+            indexAxis: 'y',
             plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: (ctx) => formatCurrency(ctx.raw)
-                    }
-                }
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+                tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${(c.raw * 100).toFixed(1)}%` } }
             },
             scales: {
-                x: {
-                    ticks: {
-                        maxTicksLimit: 12,
-                        font: { size: 10 }
-                    },
-                    grid: { display: false }
-                },
-                y: {
-                    ticks: {
-                        callback: (v) => '₱' + (v / 1000).toFixed(0) + 'k',
-                        font: { size: 10 }
-                    },
-                    grid: { color: '#f0f0f0' }
-                }
+                x: { stacked: true, max: 1, ticks: { callback: v => Math.round(v * 100) + '%', font: { size: 10 } }, grid: { color: '#f0f0f0' } },
+                y: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } }
             }
         }
     });
+
+    // ============================================================
+    // ENERGY USE COVERAGE MATRIX TABLE
+    // ============================================================
+    const solarSizes = SOLAR_PRICES.map(s => s.kwp);
+    const batterySizes = [0, 5, 10, 15, 20, 25, 30, 35, 40];
+
+    // Build coverage table by running mini-simulations
+    function calcCoverage(solKwp, batKwh, nmOn) {
+        let totCov = 0, totBat = 0, totNm = 0, totCons = 0, totExcess = 0;
+        const hData = [];
+        for (let h = 0; h < 24; h++) {
+            const base = baseloadPerHour;
+            const devLoad = getDeviceLoadAtHour(h);
+            const total = base + devLoad;
+            const entry = RADIANCE_CURVE.find(r => r.hour === h);
+            const sol = entry ? entry.factor * ASSUMPTIONS.kwhPerKwpPerDay * solKwp : 0;
+            const cov = Math.min(total, sol);
+            const exc = sol - cov;
+            hData.push({ total, cov, exc, unmet: total - cov });
+            totExcess += exc;
+            totCons += total;
+        }
+        const batCap = Math.min(totExcess, batKwh) * ASSUMPTIONS.batteryEfficiency * ASSUMPTIONS.allowableDoD;
+        const nmCred = nmOn ? (totExcess - (batCap / ASSUMPTIONS.allowableDoD)) * ASSUMPTIONS.netMeteringEfficiency : 0;
+        let batRem = batCap, credRem = Math.max(0, nmCred);
+        for (let h = 0; h < 24; h++) {
+            const d = hData[h];
+            const bUse = Math.min(batRem, d.unmet); batRem = Math.max(0, batRem - d.unmet);
+            const afterB = d.unmet - bUse;
+            const cUse = Math.min(credRem, afterB); credRem = Math.max(0, credRem - afterB);
+            totCov += d.cov; totBat += bUse; totNm += cUse;
+        }
+        return totCons > 0 ? (totCov + totBat + totNm) / totCons : 0;
+    }
+
+    let matHtml = '<thead><tr><th></th><th colspan="' + solarSizes.length + '">SOLAR CAPACITY (kWp)</th></tr>';
+    matHtml += '<tr><th>Battery (kWh)</th>';
+    solarSizes.forEach(s => matHtml += `<th>${formatNumber(s, 2)}</th>`);
+    matHtml += '</tr></thead><tbody>';
+
+    // Pre-compute all coverage values
+    const covGrid = batterySizes.map(bKwh => solarSizes.map(sKwp => (calcCoverage(sKwp, bKwh, false) * 100).toFixed(1)));
+
+    batterySizes.forEach((bKwh, ri) => {
+        matHtml += `<tr><td>${bKwh}</td>`;
+        solarSizes.forEach((sKwp, ci) => {
+            const val = covGrid[ri][ci];
+            const isHL = (Math.abs(sKwp - solarKwp) < 0.01 && bKwh === batteryKwhTotal);
+            const isDup = ri > 0 && val === covGrid[ri - 1][ci];
+            const cls = isHL ? 'highlight' : (isDup ? 'dim' : '');
+            matHtml += `<td class="${cls}">${val}%</td>`;
+        });
+        matHtml += '</tr>';
+    });
+    matHtml += '</tbody>';
+    document.getElementById('coverageMatrix').innerHTML = matHtml;
+
+    // Coverage text
+    const covTxtEl = document.getElementById('coverageText');
+    if (solarKwp > 0) {
+        covTxtEl.textContent = `${formatNumber(solarKwp, 2)}-kWp Solar${batteryKwhTotal > 0 ? ` with ${batteryKwhTotal}-kWh Battery` : ''}${netMeteringOn ? ' & Net Metering' : ''} covers ${(solarCoveragePct * 100).toFixed(1)}% of your energy consumption.`;
+    } else {
+        covTxtEl.textContent = '';
+    }
+
+    // ============================================================
+    // PAYMENT SUMMARY CARD
+    // ============================================================
+    const isDirectPurchase = paymentTerm === 1;
+    const termType = (isDirectPurchase || isCC) ? 'Direct Purchase' : 'Rent-to-Own (RTO)';
+    document.getElementById('paymentTermType').textContent = termType;
+
+    if (dpPct > 0) {
+        const dpVia = dpCcOn ? 'via Credit Card' : 'via Cash / Check / Bank Transfer';
+        document.getElementById('dpSummaryText').textContent = `${Math.round(dpPct * 100)}% Pre-Installation Downpayment ${dpVia}`;
+    } else {
+        document.getElementById('dpSummaryText').textContent = 'Zero Pre-Installation Downpayment';
+    }
+
+    const postInstAmt = dpPct > 0 ? investmentAmount - dpChargedToCC : investmentAmount;
+    document.getElementById('postInstAmount').textContent = formatCurrency(postInstAmt);
+    if (isDirectPurchase) {
+        document.getElementById('postInstLabel').textContent = isCC ? 'Amount Due via Credit Card' : 'Direct Purchase Amount';
+        document.getElementById('postInstSub').textContent = isCC ? 'on your Credit Card' : 'via Cash / Check / Bank Transfer';
+    } else {
+        document.getElementById('postInstLabel').textContent = 'Post-Installation Amount Due';
+        document.getElementById('postInstSub').textContent = isCC ? 'via Credit Card Installment Plan' : 'via Monthly Post-Dated Check Payments';
+    }
+
+    document.getElementById('postInstPayments').textContent = isDirectPurchase ? '1' : paymentTerm;
+    document.getElementById('postInstPaySub').textContent = isDirectPurchase
+        ? ''
+        : (isCC ? 'on your Credit Card' : 'via Post-Dated Checks (PDCs)');
+
+    if (isDirectPurchase) {
+        document.getElementById('monthlyPmtLabel').textContent = '';
+        document.getElementById('monthlyPmtAmount').textContent = '';
+    } else {
+        document.getElementById('monthlyPmtLabel').textContent = isCC
+            ? 'Your Credit Card Monthly Payment'
+            : 'Monthly Post-Dated-Check (PDC) Amount';
+        document.getElementById('monthlyPmtAmount').textContent = formatCurrency(monthlyRTO);
+    }
+    document.getElementById('amountDue').textContent = formatCurrency(investmentAmount);
+
+    // ============================================================
+    // AMOUNT DUE MATRIX TABLE
+    // ============================================================
+    const matrixTerms = [6, 12, 24, 36, 48, 60];
+    const matrixDPs = [0.10, 0.20, 0.30, 0.40, 0.50];
+
+    let adHtml = '<thead><tr><th></th><th colspan="' + matrixDPs.length + '">Pre-Installation Downpayment</th></tr>';
+    adHtml += '<tr><th></th>';
+    matrixDPs.forEach(d => adHtml += `<th>${Math.round(d * 100)}%</th>`);
+    adHtml += '</tr></thead><tbody>';
+
+    matrixTerms.forEach(term => {
+        const rowActive = (term === paymentTerm) ? ' class="row-active"' : '';
+        adHtml += `<tr${rowActive}><td>${term}-Mos.</td>`;
+        const termPrice = (term === 60) ? gross60mo : PMT(monthlyRate, term, -totalSpotCash, 0, 1) * term;
+        matrixDPs.forEach(dp => {
+            const dpAmt = dp * termPrice;
+            const dpAdj = dpAmt * (1 + monthlyRate);
+            const dpFee = dpCcOn ? dpAmt * 0.05 : 0;
+            const dpCharged = dpAmt + dpFee;
+            let total;
+            if (term === 1) {
+                total = totalSpotCash - dpAdj + dpCharged;
+            } else {
+                const basePmt = PMT(monthlyRate, term, -(totalSpotCash - dpAdj), 0, 1);
+                const ccMul = isCC ? 1.05 : 1;
+                total = dpCharged + basePmt * ccMul * term;
+            }
+            const isHL = (term === paymentTerm && Math.abs(dp - dpPct) < 0.001);
+            const displayVal = total >= 1000000
+                ? '₱' + (total / 1000).toFixed(0) + 'k'
+                : formatCurrency(total);
+            adHtml += `<td class="${isHL ? 'highlight' : ''}">${displayVal}</td>`;
+        });
+        adHtml += '</tr>';
+    });
+    adHtml += '</tbody>';
+    document.getElementById('amountDueMatrix').innerHTML = adHtml;
+
+    // ============================================================
+    // VALIDITY BAR
+    // ============================================================
+    const validUntil = new Date(2026, 3, 30); // April 30, 2026
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('todayDate').textContent = todayStr;
+    const isValid = today <= validUntil;
+    const statusEl = document.getElementById('validityStatus');
+    statusEl.textContent = isValid ? 'VALID' : 'EXPIRED';
+    statusEl.className = isValid ? 'status-valid' : 'status-expired';
+
+    // Fade values back in
+    if (resultsCol) resultsCol.classList.remove('updating');
 }
 
 // ============================================================
 // INITIALIZATION
 // ============================================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Show loading state
+    document.body.style.opacity = '0.6';
+    document.body.style.pointerEvents = 'none';
+
+    // Load lookup data from Supabase (falls back to hardcoded defaults on failure)
+    await loadFromSupabase();
+
+    // Restore UI and initialize
+    document.body.style.opacity = '1';
+    document.body.style.pointerEvents = '';
+    initSolarDropdown();
+    initBatteryDropdown();
     initDeviceTable();
-    recalculate();
+    _doRecalculate(null); // initial calc without animation
 });
 </script>
 
