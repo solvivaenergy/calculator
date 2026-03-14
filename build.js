@@ -81,6 +81,64 @@ async function build() {
     `Build complete: ${srcSize} KB -> ${outSize} KB (${Math.round((1 - outSize / srcSize) * 100)}% smaller)`,
   );
   console.log(`Output: dist/index.html`);
+
+  // Build settings page
+  const settingsSrc = path.join(__dirname, "settings", "index.html");
+  if (fs.existsSync(settingsSrc)) {
+    const settingsHtml = fs.readFileSync(settingsSrc, "utf8");
+    const settingsScriptRegex = /(<script>)([\s\S]*?)(<\/script>)/g;
+    const settingsScripts = [];
+    let settingsWithPlaceholders = settingsHtml;
+    let sMatch;
+    let sIdx = 0;
+    const sMatches = [];
+    while ((sMatch = settingsScriptRegex.exec(settingsHtml)) !== null) {
+      sMatches.push({ full: sMatch[0], js: sMatch[2] });
+    }
+    for (const m of sMatches) {
+      const placeholder = `<!--SETTINGS_SCRIPT_${sIdx}-->`;
+      const result = await minifyJS(m.js, {
+        compress: { dead_code: true, drop_console: false, passes: 2 },
+        mangle: { toplevel: true },
+        format: { comments: false },
+      });
+      settingsScripts.push(result.code || "");
+      settingsWithPlaceholders = settingsWithPlaceholders.replace(
+        m.full,
+        placeholder,
+      );
+      sIdx++;
+    }
+    let settingsOutput = await minifyHTML(settingsWithPlaceholders, {
+      collapseWhitespace: true,
+      removeComments: false,
+      minifyCSS: true,
+      minifyJS: false,
+      removeRedundantAttributes: true,
+      removeEmptyAttributes: true,
+    });
+    for (let i = 0; i < settingsScripts.length; i++) {
+      settingsOutput = settingsOutput.replace(
+        `<!--SETTINGS_SCRIPT_${i}-->`,
+        `<script>${settingsScripts[i]}</script>`,
+      );
+    }
+    settingsOutput = settingsOutput.replace(/<!--[\s\S]*?-->/g, "");
+    const settingsDistDir = path.join(distDir, "settings");
+    if (!fs.existsSync(settingsDistDir))
+      fs.mkdirSync(settingsDistDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(settingsDistDir, "index.html"),
+      settingsOutput,
+      "utf8",
+    );
+    const sSrcSize = (Buffer.byteLength(settingsHtml) / 1024).toFixed(1);
+    const sOutSize = (Buffer.byteLength(settingsOutput) / 1024).toFixed(1);
+    console.log(
+      `Settings build: ${sSrcSize} KB -> ${sOutSize} KB (${Math.round((1 - sOutSize / sSrcSize) * 100)}% smaller)`,
+    );
+    console.log(`Output: dist/settings/index.html`);
+  }
 }
 
 build().catch((err) => {

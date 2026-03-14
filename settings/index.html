@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLVIVA Settings</title>
+    <link rel="icon" type="image/png" href="../solvivafavicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #1f522b;
+            --primary-light: #2a7535;
+            --primary-dark: #163d1c;
+            --accent: #d2ff1e;
+            --blue: #006ac6;
+            --bg: #f5f6f2;
+            --card: #ffffff;
+            --text: #212121;
+            --text-muted: #616161;
+            --border: #dde5dd;
+            --error: #c62828;
+            --shadow: 0 2px 12px rgba(0,0,0,0.07);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #d2ff1e 0%, #c1f00a 100%);
+            padding: 1rem 2rem;
+            border-bottom: 3px solid var(--primary);
+            box-shadow: 0 2px 8px rgba(31,82,43,0.12);
+        }
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .header img { height: 38px; }
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .header .user-info {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+            color: var(--primary);
+        }
+
+        /* Login */
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .login-card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+        }
+        .login-card img { height: 48px; margin-bottom: 1rem; }
+        .login-card h2 { font-size: 1.2rem; margin-bottom: 0.3rem; color: var(--primary); }
+        .login-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+        .login-card input {
+            width: 100%;
+            padding: 0.65rem 0.8rem;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .login-card input:focus { border-color: var(--primary); }
+        .login-error {
+            color: var(--error);
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            min-height: 1.2em;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.55rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, opacity 0.15s;
+        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+        .btn-primary:hover:not(:disabled) { background: var(--primary-light); }
+        .btn-accent {
+            background: var(--accent);
+            color: var(--primary);
+        }
+        .btn-accent:hover:not(:disabled) { background: #c1f00a; }
+        .btn-danger {
+            background: var(--error);
+            color: #fff;
+        }
+        .btn-danger:hover:not(:disabled) { background: #b71c1c; }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--border);
+            color: var(--text);
+        }
+        .btn-outline:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+        .btn-sm { padding: 0.35rem 0.7rem; font-size: 0.78rem; }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* Sidebar + Content */
+        .app-layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+        @media (max-width: 768px) {
+            .app-layout { grid-template-columns: 1fr; }
+        }
+
+        .sidebar {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 1rem 0;
+            position: sticky;
+            top: 1rem;
+        }
+        .sidebar h3 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            padding: 0 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .sidebar-item {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.55rem 1rem;
+            border: none;
+            background: none;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: var(--text);
+            transition: background 0.1s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-item:hover { background: #f0f4ed; }
+        .sidebar-item.active {
+            background: #eaf5e0;
+            border-left-color: var(--primary);
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Table editor */
+        .panel {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .panel-header h2 { font-size: 1.1rem; color: var(--primary); }
+        .panel-desc { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem; }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .data-table th {
+            text-align: left;
+            padding: 0.5rem 0.6rem;
+            border-bottom: 2px solid var(--border);
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+        .data-table td {
+            padding: 0.4rem 0.6rem;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+        }
+        .data-table tr:hover td { background: #fafdf5; }
+        .data-table input, .data-table select {
+            width: 100%;
+            padding: 0.35rem 0.5rem;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+            background: #fff;
+        }
+        .data-table input:focus, .data-table select:focus { border-color: var(--primary); }
+        .data-table .row-actions {
+            display: flex;
+            gap: 0.3rem;
+            white-space: nowrap;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background: var(--primary);
+            color: #fff;
+            padding: 0.7rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.error { background: var(--error); }
+
+        .hidden { display: none !important; }
+
+        /* Spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ccc;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="login-wrapper">
+        <div class="login-card">
+            <img src="../solvivalogo.png" alt="Solviva">
+            <h2>Settings Panel</h2>
+            <p>Sign in with your admin account</p>
+            <input type="email" id="loginEmail" placeholder="Email address" autocomplete="email">
+            <input type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+            <div class="login-error" id="loginError"></div>
+            <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Sign In</button>
+        </div>
+    </div>
+
+    <!-- APP (hidden until authenticated) -->
+    <div id="appScreen" class="hidden">
+        <div class="header">
+            <div class="header-inner">
+                <img src="../solvivalogo.png" alt="Solviva">
+                <h1>Settings</h1>
+                <div class="user-info">
+                    <span id="userEmail"></span>
+                    <button class="btn btn-outline btn-sm" onclick="doLogout()">Sign Out</button>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="app-layout">
+                <div class="sidebar">
+                    <h3>Data Tables</h3>
+                    <button class="sidebar-item active" onclick="showTable('assumptions')">Assumptions</button>
+                    <button class="sidebar-item" onclick="showTable('devices')">Devices</button>
+                    <button class="sidebar-item" onclick="showTable('radiance_curve')">Radiance Curve</button>
+                    <button class="sidebar-item" onclick="showTable('solar_prices')">Solar Prices</button>
+                    <button class="sidebar-item" onclick="showTable('roof_prices')">Roof Prices</button>
+                    <button class="sidebar-item" onclick="showTable('location_prices')">Location Prices</button>
+                    <button class="sidebar-item" onclick="showTable('rsd_prices')">RSD Prices</button>
+                    <button class="sidebar-item" onclick="showTable('battery_prices')">Battery Prices</button>
+                    <button class="sidebar-item" onclick="showTable('other_prices')">Other Prices</button>
+                    <button class="sidebar-item" onclick="showTable('maintenance_prices')">Maintenance Prices</button>
+                </div>
+                <div class="panel" id="editorPanel">
+                    <div class="panel-header">
+                        <h2 id="panelTitle">Assumptions</h2>
+                        <div>
+                            <button class="btn btn-accent btn-sm" id="btnAddRow" onclick="addRow()">+ Add Row</button>
+                        </div>
+                    </div>
+                    <div class="panel-desc" id="panelDesc">Key-value pairs used throughout the calculator.</div>
+                    <div id="tableContainer"><div class="spinner"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+    // ── Supabase Config ─────────────────────────────────────
+    const SUPABASE_URL = 'https://trpgecffkngyvejireyr.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRycGdlY2Zma25neXZlamlyZXlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzOTgxODIsImV4cCI6MjA4ODk3NDE4Mn0.1_MII9B22ikb5HXBzMTq-0hQEC_6BnOHu2W_JZDHaTs';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ── Table Definitions ───────────────────────────────────
+    const TABLES = {
+        assumptions: {
+            title: 'Assumptions',
+            desc: 'Key-value pairs used throughout the calculator.',
+            pk: ['key'],
+            cols: [
+                { key: 'key', label: 'Key', type: 'text' },
+                { key: 'value', label: 'Value', type: 'number' }
+            ]
+        },
+        devices: {
+            title: 'Devices',
+            desc: 'Appliance list with kW rating and AC flag.',
+            pk: ['name'],
+            cols: [
+                { key: 'name', label: 'Name', type: 'text' },
+                { key: 'kw', label: 'kW', type: 'number' },
+                { key: 'is_ac', label: 'Is AC?', type: 'boolean' }
+            ]
+        },
+        radiance_curve: {
+            title: 'Radiance Curve',
+            desc: 'Hourly solar radiance factors (hours 6–17).',
+            pk: ['hour'],
+            cols: [
+                { key: 'hour', label: 'Hour', type: 'number' },
+                { key: 'factor', label: 'Factor', type: 'number' }
+            ]
+        },
+        solar_prices: {
+            title: 'Solar Prices',
+            desc: 'Price per kWp, cost, and acquisition cost by system size.',
+            pk: ['kwp'],
+            cols: [
+                { key: 'kwp', label: 'kWp', type: 'number' },
+                { key: 'price_per_kwp', label: 'Price/kWp', type: 'number' },
+                { key: 'cost', label: 'Cost', type: 'number' },
+                { key: 'acqui_cost', label: 'Acqui Cost', type: 'number' }
+            ]
+        },
+        roof_prices: {
+            title: 'Roof Prices',
+            desc: 'Roof surcharge by type and kWp index (0–6).',
+            pk: ['roof_type', 'kwp_index'],
+            cols: [
+                { key: 'roof_type', label: 'Roof Type', type: 'text' },
+                { key: 'kwp_index', label: 'kWp Index', type: 'number' },
+                { key: 'spot_price', label: 'Spot Price', type: 'number' }
+            ]
+        },
+        location_prices: {
+            title: 'Location Prices',
+            desc: 'Location surcharge by area and kWp index (0–6).',
+            pk: ['location', 'kwp_index'],
+            cols: [
+                { key: 'location', label: 'Location', type: 'text' },
+                { key: 'kwp_index', label: 'kWp Index', type: 'number' },
+                { key: 'spot_price', label: 'Spot Price', type: 'number' }
+            ]
+        },
+        rsd_prices: {
+            title: 'RSD Prices',
+            desc: 'Rapid shutdown device pricing by system size.',
+            pk: ['kwp'],
+            cols: [
+                { key: 'kwp', label: 'kWp', type: 'number' },
+                { key: 'cost', label: 'Cost', type: 'number' },
+                { key: 'spot', label: 'Spot', type: 'number' }
+            ]
+        },
+        battery_prices: {
+            title: 'Battery Prices',
+            desc: 'Battery system component pricing.',
+            pk: ['component'],
+            cols: [
+                { key: 'component', label: 'Component', type: 'text' },
+                { key: 'cost', label: 'Cost', type: 'number' },
+                { key: 'spot', label: 'Spot', type: 'number' }
+            ]
+        },
+        other_prices: {
+            title: 'Other Prices',
+            desc: 'Net metering, cabling, delivery, and permit costs.',
+            pk: ['key'],
+            cols: [
+                { key: 'key', label: 'Key', type: 'text' },
+                { key: 'cost', label: 'Cost', type: 'number' },
+                { key: 'spot', label: 'Spot', type: 'number' }
+            ]
+        },
+        maintenance_prices: {
+            title: 'Maintenance Prices',
+            desc: 'Maintenance cost per visit by system size.',
+            pk: ['kwp'],
+            cols: [
+                { key: 'kwp', label: 'kWp', type: 'number' },
+                { key: 'cost_per_visit', label: 'Cost/Visit', type: 'number' }
+            ]
+        }
+    };
+
+    let currentTable = 'assumptions';
+    let tableData = [];
+
+    // ── Auth ─────────────────────────────────────────────────
+    async function doLogin() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const pw = document.getElementById('loginPassword').value;
+        const errEl = document.getElementById('loginError');
+        errEl.textContent = '';
+        if (!email || !pw) { errEl.textContent = 'Enter email and password.'; return; }
+
+        const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+        if (error) { errEl.textContent = error.message; return; }
+        await initApp();
+    }
+
+    async function doLogout() {
+        await sb.auth.signOut();
+        document.getElementById('appScreen').classList.add('hidden');
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('loginError').textContent = '';
+    }
+
+    async function initApp() {
+        const { data: { user } } = await sb.auth.getUser();
+        if (!user) return;
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('appScreen').classList.remove('hidden');
+        document.getElementById('userEmail').textContent = user.email;
+        await loadTable(currentTable);
+    }
+
+    // Check session on load
+    sb.auth.onAuthStateChange((event, session) => {
+        if (session?.user) initApp();
+    });
+
+    // ── Table Navigation ────────────────────────────────────
+    function showTable(name) {
+        currentTable = name;
+        document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+        const items = document.querySelectorAll('.sidebar-item');
+        const keys = Object.keys(TABLES);
+        const idx = keys.indexOf(name);
+        if (idx >= 0 && items[idx]) items[idx].classList.add('active');
+        loadTable(name);
+    }
+
+    // ── Load Data ───────────────────────────────────────────
+    async function loadTable(name) {
+        const def = TABLES[name];
+        document.getElementById('panelTitle').textContent = def.title;
+        document.getElementById('panelDesc').textContent = def.desc;
+        document.getElementById('tableContainer').innerHTML = '<div class="spinner"></div>';
+
+        const { data, error } = await sb.from(name).select('*');
+        if (error) {
+            document.getElementById('tableContainer').innerHTML =
+                `<p style="color:var(--error)">Error: ${escHtml(error.message)}</p>`;
+            return;
+        }
+        tableData = data || [];
+        renderTable(name);
+    }
+
+    // ── Render Table ────────────────────────────────────────
+    function renderTable(name) {
+        const def = TABLES[name];
+        if (!tableData.length) {
+            document.getElementById('tableContainer').innerHTML =
+                '<p style="color:var(--text-muted);padding:1rem 0">No rows. Click "+ Add Row" to begin.</p>';
+            return;
+        }
+
+        let html = '<table class="data-table"><thead><tr>';
+        for (const col of def.cols) {
+            html += `<th>${escHtml(col.label)}</th>`;
+        }
+        html += '<th style="width:100px">Actions</th></tr></thead><tbody>';
+
+        for (let i = 0; i < tableData.length; i++) {
+            const row = tableData[i];
+            html += `<tr id="row-${i}">`;
+            for (const col of def.cols) {
+                const isPk = def.pk.includes(col.key);
+                const val = row[col.key] ?? '';
+                if (col.type === 'boolean') {
+                    html += `<td><select data-row="${i}" data-col="${col.key}" ${isPk ? 'disabled' : ''}
+                        onchange="markDirty(${i})">
+                        <option value="true" ${val ? 'selected' : ''}>Yes</option>
+                        <option value="false" ${!val ? 'selected' : ''}>No</option>
+                    </select></td>`;
+                } else {
+                    html += `<td><input type="${col.type === 'number' ? 'number' : 'text'}"
+                        value="${escAttr(String(val))}"
+                        data-row="${i}" data-col="${col.key}"
+                        step="any"
+                        ${isPk ? 'disabled' : ''}
+                        onchange="markDirty(${i})"
+                        oninput="markDirty(${i})"></td>`;
+                }
+            }
+            html += `<td class="row-actions">
+                <button class="btn btn-primary btn-sm" id="save-${i}" disabled onclick="saveRow(${i})"
+                    title="Save">&#10003;</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteRow(${i})" title="Delete">&#10005;</button>
+            </td></tr>`;
+        }
+        html += '</tbody></table>';
+        document.getElementById('tableContainer').innerHTML = html;
+    }
+
+    function markDirty(i) {
+        const btn = document.getElementById('save-' + i);
+        if (btn) btn.disabled = false;
+    }
+
+    // ── Collect Row Values from DOM ─────────────────────────
+    function collectRowValues(i) {
+        const def = TABLES[currentTable];
+        const obj = {};
+        for (const col of def.cols) {
+            const el = document.querySelector(`[data-row="${i}"][data-col="${col.key}"]`);
+            if (!el) continue;
+            if (col.type === 'boolean') {
+                obj[col.key] = el.value === 'true';
+            } else if (col.type === 'number') {
+                obj[col.key] = el.value === '' ? null : Number(el.value);
+            } else {
+                obj[col.key] = el.value;
+            }
+        }
+        return obj;
+    }
+
+    // ── Save Row (UPDATE) ───────────────────────────────────
+    async function saveRow(i) {
+        const def = TABLES[currentTable];
+        const vals = collectRowValues(i);
+        const original = tableData[i];
+
+        // Build filter from primary key using original data
+        let query = sb.from(currentTable).update(vals);
+        for (const pk of def.pk) {
+            query = query.eq(pk, original[pk]);
+        }
+
+        const { error } = await query;
+        if (error) { toast(error.message, true); return; }
+        toast(`Row updated.`);
+        document.getElementById('save-' + i).disabled = true;
+        // Refresh original data
+        tableData[i] = { ...original, ...vals };
+    }
+
+    // ── Add Row ─────────────────────────────────────────────
+    function addRow() {
+        const def = TABLES[currentTable];
+        const empty = {};
+        for (const col of def.cols) {
+            if (col.type === 'boolean') empty[col.key] = false;
+            else if (col.type === 'number') empty[col.key] = 0;
+            else empty[col.key] = '';
+        }
+        tableData.push(empty);
+        renderTable(currentTable);
+
+        // Enable all inputs on the new row (including PK fields)
+        const newIdx = tableData.length - 1;
+        const row = document.getElementById('row-' + newIdx);
+        if (row) {
+            row.querySelectorAll('input, select').forEach(el => el.disabled = false);
+            // Change save button to insert
+            const saveBtn = document.getElementById('save-' + newIdx);
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.onclick = () => insertRow(newIdx);
+            }
+        }
+    }
+
+    // ── Insert Row (new) ────────────────────────────────────
+    async function insertRow(i) {
+        const vals = collectRowValues(i);
+        const { error } = await sb.from(currentTable).insert(vals);
+        if (error) { toast(error.message, true); return; }
+        toast('Row added.');
+        await loadTable(currentTable);
+    }
+
+    // ── Delete Row ──────────────────────────────────────────
+    async function deleteRow(i) {
+        const def = TABLES[currentTable];
+        const row = tableData[i];
+        const pkDisplay = def.pk.map(k => `${k}="${row[k]}"`).join(', ');
+        if (!confirm(`Delete row (${pkDisplay})?`)) return;
+
+        let query = sb.from(currentTable).delete();
+        for (const pk of def.pk) {
+            query = query.eq(pk, row[pk]);
+        }
+
+        const { error } = await query;
+        if (error) { toast(error.message, true); return; }
+        toast('Row deleted.');
+        await loadTable(currentTable);
+    }
+
+    // ── Helpers ─────────────────────────────────────────────
+    function escHtml(s) {
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+    function escAttr(s) {
+        return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    function toast(msg, isError) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.className = 'toast show' + (isError ? ' error' : '');
+        clearTimeout(el._t);
+        el._t = setTimeout(() => el.className = 'toast', 3000);
+    }
+    </script>
+</body>
+</html>
